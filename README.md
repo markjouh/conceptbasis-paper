@@ -14,4 +14,4 @@ latexmk -pdf -interaction=nonstopmode -halt-on-error main.tex
 replace the preamble with the venue's official class and bibliography style;
 the paper body, `references.bib`, and vector figures can remain unchanged.
 
-The author line is anonymized by default.
+The current author line is non-anonymous; anonymize it if the venue requires blind review.
