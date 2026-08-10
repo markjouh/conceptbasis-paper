@@ -46,7 +46,7 @@ We ask whether individually useful directions can also form a separable, additiv
 
 Two problems stand between individually useful directions and this coordinate system. First, correlations between concepts cause group-mean-derived directions to lean toward each other, even when their true partial effects are orthogonal. Second, controlling for observed co-occurrence addresses this statistical confounding but does not necessarily force the resulting directions to be orthogonal. They may still share components because features are represented in superposition, or simply because standard training provides no incentive to separate them.
 
-\begin{figure}[t]
+\begin{figure}[H]
   \centering
   \includegraphics[width=0.64\linewidth]{group-mean-confounding.pdf}
   \caption{Correlated observations skew group-mean-derived directions toward the diagonal even when the underlying concept directions are orthogonal.}
@@ -97,7 +97,7 @@ For a concept set $S$, additive retrieval scores a gallery image by $r(x\mid S)=
 
 \section{Method}
 
-\begin{figure}[t]
+\begin{figure}[H]
   \centering
   \includegraphics[width=\linewidth]{method-overview.pdf}
   \caption{ConceptBasis training. We train two nonlinear projection heads on a frozen vision-language encoder, with contrastive loss on each minibatch and orthogonality loss applied once per epoch.}
@@ -106,14 +106,14 @@ For a concept set $S$, additive retrieval scores a gallery image by $r(x\mid S)=
 
 \subsection{Dictionary and supervision}
 
-\begin{figure}[t]
+We use the \href{https://huggingface.co/nvidia/Gemma-4-26B-A4B-NVFP4}{Gemma 4 26B A4B NVFP4 checkpoint} \citep{nvidia2026gemma4} to generate grounded captions, discover candidate concepts, and assign fixed-dictionary labels. We construct the dictionary using only training classes. The model first supplies sparse, affirmative visual tags for training images. We cluster tags by their image--text similarity patterns across the training classes and retain the 256 most prevalent clusters as the concept vocabulary. The dictionary is then frozen. A separate exhaustive annotation pass judges every canonical concept for every image in the training, development, and test partitions, as well as the class representatives used for compositional retrieval.
+
+\begin{figure}[H]
   \centering
   \includegraphics[width=0.95\linewidth]{dictionary-pipeline.pdf}
   \caption{Building the dictionary and its labels. (1) Supply sparse, affirmative visual tags. (2) Cluster interchangeable labels and build a dictionary from the 256 most prevalent clusters. (3) Run an exhaustive annotation pass to build a dense label matrix.}
   \label{fig:dictionary-pipeline}
 \end{figure}
-
-We use the \href{https://huggingface.co/nvidia/Gemma-4-26B-A4B-NVFP4}{Gemma 4 26B A4B NVFP4 checkpoint} \citep{nvidia2026gemma4} to generate grounded captions, discover candidate concepts, and assign fixed-dictionary labels. We construct the dictionary using only training classes. The model first supplies sparse, affirmative visual tags for training images. We cluster tags by their image--text similarity patterns across the training classes and retain the 256 most prevalent clusters as the concept vocabulary. The dictionary is then frozen. A separate exhaustive annotation pass judges every canonical concept for every image in the training, development, and test partitions, as well as the class representatives used for compositional retrieval.
 
 \subsection{Estimating partial concept effects}
 
