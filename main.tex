@@ -79,6 +79,8 @@ Semantic vector offsets in word embeddings provided early evidence for linear co
 
 Concept whitening modifies a network so selected latent axes align with known concepts \citep{chen2020conceptwhitening}, while concept bottleneck models explicitly predict supervised concepts before a downstream task \citep{koh2020conceptbottleneck}. ConceptBasis likewise changes the learned representation, but it does not route every prediction through a concept bottleneck or assign one neuron to each concept. It retains a dense image--text embedding for open-ended retrieval and regularizes the geometry among concept directions within it.
 
+CEDAR learns a dimension-preserving orthogonal rotation of frozen vision-language embeddings by reconstructing them through a top-$k$ bottleneck, then names the learned axes using nearest text concepts \citep{kubaty2026cedar}. ConceptBasis instead begins with a fixed set of named concepts and trains a shared dense embedding so their label-conditioned partial-effect directions become separable and additive.
+
 SpLiCE decomposes a frozen CLIP embedding into a sparse nonnegative combination of text-derived atoms and preserves useful downstream behavior without retraining the encoder \citep{bhalla2024splice}. Its goal is post-hoc reconstruction, whereas ours is to train a space whose fixed attribute directions are separable and additive. In a correlated, overcomplete dictionary, the reconstruction determines the product of the dictionary and its weights, but not a unique semantic interpretation of each weight. Our coefficient experiment below tests whether the sparse weights function as named-concept coordinates; it is not a criticism of SpLiCE's intended use.
 
 \section{Preliminaries}
