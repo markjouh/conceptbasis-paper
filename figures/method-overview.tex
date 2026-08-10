@@ -57,12 +57,12 @@
   \node[inputlabel,anchor=west] (t) at (-.35,1.02) {caption $t_i$};
   \node[frozen,right=\TopGap of t] (fT) {$f_T$};
   \node[trained,right=\TopGap of fT] (gT) {$g_T$};
-  \node[outputlabel,right=\TopGap of gT] (u) {$u_i$};
+  \node[outputlabel,right=\TopGap of gT] (u) {$\hat u_i$};
 
   \node[inputlabel] (x) at ([yshift=-\PairPitch]t.center) {image $x_i$};
   \node[frozen,right=\TopGap of x] (fI) {$f_I$};
   \node[trained,right=\TopGap of fI] (gI) {$g_I$};
-  \node[outputlabel,right=\TopGap of gI] (z) {$z_i$};
+  \node[outputlabel,right=\TopGap of gI] (z) {$\hat z_i$};
 
   \node[column,anchor=south] at ([yshift=\ColumnGap]fT.north)
     {frozen encoder};
