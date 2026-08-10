@@ -1,0 +1,74 @@
+\documentclass[tikz,border=6pt]{standalone}
+\usetikzlibrary{arrows.meta,positioning,calc,fit}
+\usepackage{amsmath,amssymb}
+
+\definecolor{conceptred}{HTML}{C83E3A}
+\definecolor{axisgray}{HTML}{3F4650}
+\definecolor{pointgray}{HTML}{B8BEC7}
+\definecolor{roundblue}{HTML}{3973A8}
+
+\tikzset{
+  box/.style={rounded corners=2pt, draw=axisgray, line width=.6pt,
+              align=center, inner sep=5pt, minimum height=10mm, text=axisgray},
+  frozen/.style={box, densely dashed, fill=pointgray!30, minimum width=22mm},
+  trained/.style={box, fill=roundblue!12, draw=roundblue, minimum width=34mm},
+  loss/.style={box, fill=conceptred!10, draw=conceptred, minimum width=23mm},
+  data/.style={align=center, text=axisgray, inner sep=2pt},
+  flow/.style={-{Latex[length=2.2mm]}, line width=.75pt, draw=axisgray,
+               rounded corners=3pt},
+  line/.style={line width=.75pt, draw=axisgray, rounded corners=3pt},
+  grad/.style={-{Latex[length=2.2mm]}, line width=.9pt, draw=conceptred,
+               densely dashed, rounded corners=3pt},
+  note/.style={font=\footnotesize, text=axisgray!85, align=center, inner sep=2pt},
+  sub/.style={font=\footnotesize, text=axisgray!75, inner sep=1pt}
+}
+
+\begin{document}
+\begin{tikzpicture}[font=\small]
+
+  % ---- two towers on a frozen encoder --------------------------------------
+  \node[data]    (tin) at (-.5,1.0)  {caption $t_i$};
+  \node[frozen]  (fT)  at (2.2,1.0)  {frozen $f_T$};
+  \node[trained] (gT)  at (5.6,1.0)  {text adapter $g_T$};
+  \node[data]    (u)   at (8.4,1.0)  {$u_i$};
+
+  \node[data]    (xin) at (-.5,-1.0) {image $x_i$};
+  \node[frozen]  (fI)  at (2.2,-1.0) {frozen $f_I$};
+  \node[trained] (gI)  at (5.6,-1.0) {image adapter $g_I$};
+  \node[data]    (z)   at (8.4,-1.0) {$z_i$};
+
+  \foreach \a/\b in {tin/fT, fT/gT, gT/u, xin/fI, fI/gI, gI/z}{
+    \draw[flow] (\a) -- (\b);}
+
+  \node[rounded corners=3pt, draw=roundblue!45, line width=.5pt,
+        fit=(gT)(gI), inner sep=3mm,
+        label={[note]above:trainable adapter heads}] (heads) {};
+
+  % ---- contrastive, every minibatch ----------------------------------------
+  \node[loss] (lcon) at (11.8,0) {contrastive\\$\mathcal{L}_{\mathrm{cont}}$};
+  \draw[line] (u.east) -- node[sub,above,pos=.5]{$\ell_2$} (10.1,1.0) -- (10.1,0);
+  \draw[line] (z.east) -- node[sub,below,pos=.5]{$\ell_2$} (10.1,-1.0) -- (10.1,0);
+  \draw[flow] (10.1,0) -- (lcon.west);
+  \node[note] at (11.8,-1.1) {every minibatch};
+
+  % ---- full-data ridge solve from both modalities and fixed labels --------
+  \node[box, fill=white] (ridge) at (7.7,-3.0) {joint ridge\\regressions};
+  \node[data] (labels) at (4.4,-3.0) {fixed concept\\labels $Y$};
+
+  \fill[axisgray] (7.7,1.0)  circle (1.3pt);
+  \fill[axisgray] (7.7,-1.0) circle (1.3pt);
+  \draw[flow] (7.7,1.0) -- node[sub,right,pos=.72]{$Z_I,Z_T$} (ridge.north);
+  \draw[flow] (labels.east) -- (ridge.west);
+  \node[note,anchor=west] at (8.05,-2.0) {full training set\\once per epoch};
+
+  % ---- orthogonality, in the same column as the contrastive loss ----------
+  \node[loss] (lorth) at (11.8,-3.0) {orthogonality\\$\mathcal{L}_{\mathrm{orth}}$};
+  \draw[flow] (ridge.east) -- node[sub,above]{$D_I,D_T$} (lorth.west);
+
+  % ---- differentiate through the solve and update both adapter heads -------
+  \draw[grad] (lorth.south) -- (11.8,-4.15) --
+    node[note,text=conceptred,above,pos=.52] {backpropagation through ridge solves}
+    (5.6,-4.15) -- (heads.south);
+
+\end{tikzpicture}
+\end{document}

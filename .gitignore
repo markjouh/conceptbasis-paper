@@ -1,0 +1,18 @@
+# LaTeX build products
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+/main.pdf
+
+# Local render/QA outputs
+tmp/
+output/
+
+# OS/editor files
+.DS_Store
+*~
