@@ -1,56 +1,49 @@
-\documentclass[11pt]{article}
+\documentclass[mlmain,onecolumn]{jmlr}
 
-% Neutral pre-submission wrapper. Replace this preamble with the target
-% venue's official template while keeping the paper body and references.bib.
-\usepackage[margin=1in]{geometry}
-\usepackage{microtype}
-\usepackage{needspace}
-\usepackage{amsmath,amssymb}
-\usepackage{graphicx}
-\usepackage{booktabs,tabularx,array,makecell}
-\usepackage{enumitem}
-\usepackage{caption}
-\usepackage{float}
-\usepackage{natbib}
-\usepackage{xurl}
-\usepackage[dvipsnames]{xcolor}
-\usepackage[
-  colorlinks=true,
-  linkcolor=MidnightBlue,
-  citecolor=MidnightBlue,
-  urlcolor=MidnightBlue
-]{hyperref}
+% NeurReps 2026 Proceedings review watermark. Remove these four commands for
+% the camera-ready version, as required by the official template.
+\usepackage[hpos=300px,vpos=70px]{draftwatermark}
+\SetWatermarkText{\test}
+\SetWatermarkScale{1}
+\SetWatermarkAngle{0}
+
+% amsmath, amssymb, natbib, graphicx, url, algorithm2e, xcolor, and hyperref
+% are loaded by the official jmlr class.
+\usepackage{booktabs}
 \providecommand{\doi}[1]{%
   doi: \begingroup\urlstyle{rm}\def\UrlBreaks{\do\/}%
   \href{https://doi.org/#1}{\nolinkurl{#1}}\endgroup}
 
 \graphicspath{{figures/}}
-\captionsetup{font=small,labelfont=bf}
-\setlist[itemize]{label=$\bullet$,leftmargin=*,itemsep=0.25\baselineskip,
-  topsep=0.5\baselineskip}
-\newcolumntype{Y}{>{\centering\arraybackslash}X}
 
-\title{\vspace{-2.5em}\textbf{ConceptBasis}}
-\author{Xinyun Zhou, Walter Gerych}
-\date{}
+% NeurReps 2026 metadata. Author information must remain absent for review.
+\jmlrvolume{}
+\firstpageno{1}
+\editors{List of editors' names}
+\jmlryear{2026}
+\jmlrworkshop{Symmetry and Geometry in Neural Representations}
+\title[ConceptBasis]{ConceptBasis}
+\hypersetup{pdfauthor={},pdftitle={ConceptBasis}}
 
 \begin{document}
 \maketitle
-\vspace{-2em}
 
 \begin{abstract}
-The linear representation hypothesis proposes that semantic concepts are encoded as directions in a model's embedding space. Directions estimated with linear probes or differences between group means already support useful concept readout, steering, and debiasing. However, directions that work individually need not form a separable, additive coordinate system. Group-mean-derived directions can be confounded by co-occurring concepts, while directions estimated after controlling for those co-occurrences can still overlap geometrically. We introduce ConceptBasis, which uses ridge regression on all observed concept labels jointly to estimate partial concept effects and trains lightweight image and text adapters to reduce the remaining overlap while retaining contrastive retrieval. We evaluate direction overlap and class-disjoint compositional retrieval on the THINGS object dataset. Compared with orthogonality training on group-mean-derived directions, ConceptBasis reduces RMS overlap from .122 to .056 and raises ten-attribute compositional Recall@5 from .624 to .730, while bidirectional image--text Recall@5 remains virtually unchanged.
+The linear representation hypothesis proposes that semantic concepts are encoded as directions in a model's embedding space. Directions estimated with linear probes or differences between group means already support useful concept readout, steering, and debiasing. However, directions that work individually need not form a separable, additive coordinate system. Such a coordinate system would make output embeddings natively interpretable and enable more precise test-time interventions. Group-mean-derived directions can be confounded by co-occurring concepts, while directions estimated after controlling for those co-occurrences can still overlap geometrically. We introduce ConceptBasis, which constructs a fixed concept dictionary and dense label matrix, uses joint ridge regression to estimate partial concept effects, and trains lightweight image and text adapters to reduce the remaining overlap while retaining contrastive retrieval. We evaluate direction overlap and class-disjoint compositional retrieval on the THINGS object dataset. Compared with orthogonality training on group-mean-derived directions, ConceptBasis reduces RMS overlap from .122 to .056 and raises ten-attribute compositional Recall@5 from .624 to .730, while bidirectional image--text Recall@5 remains virtually unchanged.
 \end{abstract}
+\begin{keywords}
+representation geometry, concept directions, compositionality, interpretability, vision-language models
+\end{keywords}
 
 \section{Introduction}
 
-The linear representation hypothesis proposes that semantic concepts are encoded as directions in a model's embedding space \citep{park2024linear}. Early word embeddings showed that semantic relationships can be expressed through vector arithmetic, as in the famous example of $\text{king}-\text{man}+\text{woman}\approx\text{queen}$ \citep{mikolov2013linguistic}. Later work showed the practical implications of these ideas. Directions estimated with linear probes support concept-based interpretation \citep{kim2018tcav}; differences between group means can steer model behavior \citep{rimsky2024steering}; and projecting out identified directions can reduce bias in word embeddings \citep{bolukbasi2016debiasing} and vision-language models \citep{chuang2023debiasing}. These results establish concept directions as useful interfaces to learned representations.
+Many empirical results are consistent with semantic information occupying approximately linear directions in representation space, an idea formalized by the linear representation hypothesis \citep{park2024linear}. Early word embeddings showed that semantic relationships can be expressed through vector arithmetic, as in the famous example of $\text{king}-\text{man}+\text{woman}\approx\text{queen}$ \citep{mikolov2013linguistic}. Later work showed the practical implications of these ideas. Directions estimated with linear probes support concept-based interpretation \citep{kim2018tcav}; differences between group means can steer model behavior \citep{rimsky2024steering}; and projecting out identified directions can reduce bias in word embeddings \citep{bolukbasi2016debiasing} and vision-language models \citep{chuang2023debiasing}. These results establish concept directions as useful interfaces to learned representations.
 
-We ask whether individually useful directions can also form a separable, additive coordinate system. An image embedding may represent a red, round apple while its directions for \texttt{red}, \texttt{round}, and \texttt{apple} share significant components of one another. Shared components can cause cross-talk when a direction is used individually and repeatedly count the same information when directions are combined. Standard vision-language objectives train image--text alignment \citep{radford2021clip,tschannen2025siglip2}, but do not directly encourage either separability or additivity.
+We ask whether individually useful directions can also form a separable, additive coordinate system. Such a system would make each coefficient a less-confounded measure of its named concept, enable embedding edits with less collateral damage, and allow more natural composition without double-counting shared components. An image embedding may represent a red, round apple while its directions for \texttt{red}, \texttt{round}, and \texttt{apple} share significant components of one another. Shared components can cause cross-talk when a direction is used individually and repeatedly count the same information when directions are combined. Standard vision-language objectives train image--text alignment \citep{radford2021clip,tschannen2025siglip2}, but do not directly encourage either separability or additivity.
 
 Two problems stand between individually useful directions and this coordinate system. First, correlations between concepts cause group-mean-derived directions to lean toward each other, even when their true partial effects are orthogonal. Second, controlling for observed co-occurrence addresses this statistical confounding but does not necessarily force the resulting directions to be orthogonal. They may still share components because standard training provides no incentive to separate them.
 
-\begin{figure}[H]
+\begin{figure}[t]
   \centering
   \includegraphics[width=0.64\linewidth]{group-mean-confounding.pdf}
   \caption{Correlated observations skew group-mean-derived directions toward the diagonal even when the underlying concept directions are orthogonal.}
@@ -59,7 +52,7 @@ Two problems stand between individually useful directions and this coordinate sy
 
 Linear probes and group means identify directions along which examples with a concept are separated from examples without it. They can use any available signal, including correlated concepts, to make that distinction. This is useful for readout and for interventions intended to suppress group-predictive information, such as debiasing, but it does not isolate the component associated specifically with the concept. We instead seek partial effects: the embedding difference associated with one concept after controlling for the other observed concepts.
 
-ConceptBasis estimates these partial effects with ridge regression on all observed concept labels jointly. It then trains lightweight image and text adapters with an orthogonality objective to reduce the remaining overlap among the estimated directions. A contrastive objective preserves ordinary image--text retrieval. Because the adapters operate on a frozen vision-language encoder, ConceptBasis reshapes its embedding geometry without retraining the underlying model.
+In this work, we propose ConceptBasis, a system that constructs a concept dictionary by discovering and merging visual tags, then labels the images against it. ConceptBasis estimates these partial effects with ridge regression on all observed concept labels jointly. It then trains lightweight image and text adapters with an orthogonality objective to reduce the remaining overlap among the estimated directions. A contrastive objective preserves ordinary image--text retrieval. Because the adapters operate on a frozen vision-language encoder, ConceptBasis reshapes its embedding geometry without retraining the underlying model.
 
 We evaluate ConceptBasis on the THINGS dataset, measuring geometric overlap between partial-effect directions and testing additivity through compositional retrieval. Given a subset of an image's attributes, we sum their concept directions and use the result to retrieve the source image from a gallery of unseen object classes. If the representation is additive, supplying more correct attributes should make the intended image easier to identify. We separately evaluate bidirectional image--text retrieval to test whether the new geometry comes at the cost of the original representation.
 
@@ -68,8 +61,7 @@ Across five seeds, ConceptBasis reduces RMS direction overlap from .122 to .056 
 Our contributions are:
 \begin{itemize}
   \item We distinguish group-predictive directions, which may exploit correlated concepts, from partial concept effects, and identify statistical confounding and geometric overlap as separate barriers to separability and additivity.
-  \Needspace{4\baselineskip}
-  \item We introduce ConceptBasis, which estimates partial concept effects with joint ridge regression and trains lightweight image and text adapters to reduce their remaining overlap while preserving contrastive alignment.
+  \item We introduce ConceptBasis, which constructs its concept dictionary and labels, estimates partial concept effects with joint ridge regression, and trains lightweight image and text adapters to reduce their remaining overlap while preserving contrastive alignment.
   \item We introduce a class-disjoint compositional retrieval evaluation on THINGS and show that ConceptBasis improves geometric separability and additive retrieval without sacrificing bidirectional image--text retrieval.
 \end{itemize}
 
@@ -79,11 +71,11 @@ Semantic vector offsets in word embeddings provided early evidence for linear co
 
 CEDAR learns a dimension-preserving orthogonal rotation of frozen vision-language embeddings by reconstructing them through a top-$k$ bottleneck, then names the learned axes using nearest text concepts \citep{kubaty2026cedar}. ConceptBasis instead begins with a fixed set of named concepts and trains a shared dense embedding so their label-conditioned partial-effect directions become separable and additive.
 
-SpLiCE decomposes a frozen CLIP embedding into a sparse nonnegative combination of text-derived atoms and preserves useful downstream behavior without retraining the encoder \citep{bhalla2024splice}. Its goal is post-hoc reconstruction, whereas ours is to train a space whose fixed attribute directions are separable and additive. In a correlated, overcomplete dictionary, the reconstruction determines the product of the dictionary and its weights, but not a unique semantic interpretation of each weight. Our coefficient experiment below tests whether the sparse weights function as named-concept coordinates; it is not a criticism of SpLiCE's intended use.
+SpLiCE decomposes a frozen CLIP embedding into a sparse nonnegative combination of text-derived atoms for post-hoc interpretation, including spurious-correlation diagnosis and model editing \citep{bhalla2024splice}. ConceptBasis instead trains a space whose fixed attribute directions are separable and additive. Our coefficient experiment tests whether SpLiCE's sparse weights function as named-concept coordinates in a correlated, overcomplete dictionary; it is not a criticism of SpLiCE's intended use.
 
 \section{Preliminaries}
 
-Let a frozen vision-language encoder map an image $x_i$ and caption $t_i$ to embeddings $f_I(x_i)$ and $f_T(t_i)$. We learn image and text adapters $g_I$ and $g_T$, producing vectors $z_i=g_I(f_I(x_i))$ and $u_i=g_T(f_T(t_i))$ in a shared $d$-dimensional space. A fixed dictionary contains $K$ affirmative visual concepts. Training image $i$ has binary concept labels $y_i \in \{0,1\}^K$.
+Let a frozen vision-language encoder map an image $x_i$ and caption $t_i$ to embeddings $f_I(x_i)$ and $f_T(t_i)$. We learn image and text adapters $g_I$ and $g_T$, producing vectors $z_i=g_I(f_I(x_i))$ and $u_i=g_T(f_T(t_i))$ in a shared $d$-dimensional space. We construct a fixed dictionary containing $K$ affirmative visual concepts. We obtain binary concept labels $y_i \in \{0,1\}^K$ for each training image $i$.
 
 For unit concept directions $d_1,\ldots,d_K$, collected as the rows of $D\in\mathbb{R}^{K\times d}$, we define the coefficient of concept $k$ as its projection onto $d_k$, standardized using the mean $\mu_k$ and standard deviation $\sigma_k$ of the training-set projections:
 \begin{equation}
@@ -102,7 +94,7 @@ For a concept set $S$, additive retrieval scores a gallery image by $r(x\mid S)=
 
 \section{Method}
 
-\begin{figure}[H]
+\begin{figure}[t]
   \centering
   \includegraphics[width=\linewidth]{method-overview.pdf}
   \caption{ConceptBasis training. We train two nonlinear projection heads on a frozen vision-language encoder, with contrastive loss on each minibatch and orthogonality loss applied once per epoch.}
@@ -113,7 +105,7 @@ For a concept set $S$, additive retrieval scores a gallery image by $r(x\mid S)=
 
 We use the \href{https://huggingface.co/nvidia/Gemma-4-26B-A4B-NVFP4/tree/a19cfe00be84568a6867111c9a68c9c44fdcffe6}{Gemma 4 26B A4B NVFP4 checkpoint} \citep{nvidia2026gemma4} to generate grounded captions, discover candidate concepts, and assign fixed-dictionary labels. We construct the dictionary using only training classes. The model first supplies sparse, affirmative visual tags for training images. We cluster tags by their image--text similarity patterns across the training classes and retain the 256 most prevalent clusters as the concept vocabulary. The dictionary is then frozen. A separate exhaustive annotation pass judges every canonical concept for every image in the training, development, and test partitions, as well as the class representatives used for compositional retrieval.
 
-\begin{figure}[H]
+\begin{figure}[t]
   \centering
   \includegraphics[width=0.95\linewidth]{dictionary-pipeline.pdf}
   \caption{Building the dictionary and its labels. (1) Supply sparse, affirmative visual tags. (2) Cluster interchangeable labels and build a dictionary from the 256 most prevalent clusters. (3) Run an exhaustive annotation pass to build a dense label matrix.}
@@ -158,21 +150,29 @@ We use the THINGS dataset \citep{hebart2019things}, with 1,298 object classes fo
   \mathbb{R}^{320}.
   \label{eq:adapter}
 \end{equation}
-The image and text heads have the same architecture but separate parameters. The three main conditions use the same architecture, data, and minibatch contrastive schedule across five matched random seeds: contrastive training alone, orthogonality training on group-mean-derived directions, and orthogonality training on partial-effect directions.
+The image and text heads have the same architecture but separate parameters.
 
-The main results are summarized in Table~\ref{tab:main-results}. RMS overlap is computed from the train-estimated directions; ten-attribute retrieval uses one representative from each of the 278 held-out test classes, while ordinary retrieval uses all 3,982 test image--caption pairs. Bidirectional image--text R@5 is the mean of image-to-caption and caption-to-image R@5. Values are mean $\pm$ sample standard deviation over seeds.
+\subsection{Evaluation protocol and compared methods}
 
-\begin{table}[H]
+All adapter conditions use the same architecture, data, and minibatch contrastive schedule across five matched random seeds. \emph{Contrastive} trains the adapters only for image--caption alignment and estimates group-mean directions afterward. \emph{Group-mean orthogonality} adds an orthogonality update on those group-mean directions; it is ConceptBasis without the joint-regression estimator. \emph{ConceptBasis} instead estimates all partial-effect directions jointly and orthogonalizes them during training. A further \emph{direct-composition} control uses the same joint-ridge estimator as ConceptBasis but replaces the orthogonality update with sampled compositional retrieval supervision. Finally, SpLiCE is a training-free sparse decomposition of frozen OpenCLIP embeddings. We compare against SpLiCE only for named-coordinate readout because it does not train the shared dense space evaluated by the geometric and compositional tests.
+
+RMS overlap is computed from the train-estimated directions. Ten-attribute retrieval uses one representative from each of the 278 held-out test classes, while ordinary retrieval uses all 3,982 test image--caption pairs. Bidirectional image--text R@5 is the mean of image-to-caption and caption-to-image R@5. Unless stated otherwise, values are mean $\pm$ sample standard deviation over seeds.
+
+\subsection{Main results}
+
+Table~\ref{tab:main-results} compares the three matched training conditions.
+
+\begin{table}[h!]
   \centering
   \caption{Main test results.}
   \label{tab:main-results}
   \small
-  \begin{tabularx}{\textwidth}{@{}X c c c@{}}
+  \begin{tabular}{@{}p{0.34\textwidth} c c c@{}}
     \toprule
     Model / direction estimator &
-    \makecell{RMS\\overlap} &
-    \makecell{Compositional R@5\\10 attributes} &
-    \makecell{Bidirectional\\image--text R@5} \\
+    \shortstack{RMS\\overlap} &
+    \shortstack{Compositional R@5\\10 attributes} &
+    \shortstack{Bidirectional\\image--text R@5} \\
     \midrule
     Contrastive / group mean
       & $.168 \pm .001$ & $.576 \pm .009$ & $.968 \pm .001$ \\
@@ -181,7 +181,7 @@ The main results are summarized in Table~\ref{tab:main-results}. RMS overlap is 
     ConceptBasis / joint-ridge partial effects
       & $\mathbf{.056 \pm .002}$ & $\mathbf{.730 \pm .005}$ & $.966 \pm .002$ \\
     \bottomrule
-  \end{tabularx}
+  \end{tabular}
 \end{table}
 
 Relative to orthogonality training on group-mean-derived directions, ConceptBasis reduces RMS overlap from .122 to .056 and raises ten-attribute Recall@5 from .624 to .730, while bidirectional image--text retrieval remains within the variation across seeds.
@@ -190,41 +190,41 @@ Relative to orthogonality training on group-mean-derived directions, ConceptBasi
 
 The matched comparison changes both the orthogonality training and the direction estimator. To isolate the effect of training, we estimate partial-effect directions from every adapter using the same joint ridge regression for direction estimation.
 
-\begin{table}[H]
+\begin{table}[h!]
   \centering
   \caption{Orthogonality-training ablation using partial-effect directions at evaluation.}
   \label{tab:orthogonality-ablation}
   \small
-  \begin{tabularx}{\textwidth}{@{}X c c@{}}
+  \begin{tabular}{@{}p{0.48\textwidth} c c@{}}
     \toprule
     Directions orthogonalized during training &
-    \makecell{RMS\\overlap} &
-    \makecell{Compositional R@5\\10 attributes} \\
+    \shortstack{RMS\\overlap} &
+    \shortstack{Compositional R@5\\10 attributes} \\
     \midrule
     None (contrastive only) & $.108 \pm .001$ & $.578 \pm .012$ \\
     Group-mean directions & $.107 \pm .001$ & $.517 \pm .009$ \\
     Partial-effect directions (ConceptBasis)
       & $\mathbf{.056 \pm .002}$ & $\mathbf{.730 \pm .005}$ \\
     \bottomrule
-  \end{tabularx}
+  \end{tabular}
 \end{table}
 
 On the contrastive-only adapter, replacing group means with partial effects reduces overlap from .168 to .108 while leaving compositional retrieval nearly unchanged (.576 versus .578). Controlling for co-occurrence therefore removes substantial statistical overlap but does not by itself produce the full additive gain. With the partial-effect estimator held fixed, group-mean orthogonality offers no improvement, whereas ConceptBasis reaches .056 overlap and .730 Recall@5. This isolates the additional contribution of training the adapter to separate the partial effects themselves.
 
 \subsection{Comparison with other methods}
 
-We compare the complete methods along three separate properties. The group-mean condition estimates directions from the contrastive-only adapter and receives no additional concept objective. The direct-composition condition uses the same joint-ridge estimator as ConceptBasis, but replaces the orthogonality loss with one sampled composition update per epoch: it selects 1--14 present concepts from each source image, sums their standardized directions, and retrieves that image from the training batch. Evaluation classes remain unseen during training. SpLiCE enters only in the named-coordinate comparison because it reconstructs a frozen embedding rather than training the shared dense space evaluated by our first two tests.
+We compare the complete methods along three separate properties. The direct-composition update selects 1--14 present concepts from each source image, sums their standardized directions, and retrieves that image from the training batch. Evaluation classes remain unseen during training.
 
 \subsubsection{Geometric cross-talk}
 
 Directions should be usable individually without moving along other named coordinates through a shared component. RMS overlap measures this geometric cross-talk directly.
 
-\begin{table}[H]
+\begin{table}[h!]
   \centering
   \caption{Geometric cross-talk.}
   \label{tab:cross-talk}
   \small
-  \begin{tabularx}{\textwidth}{@{}X X c@{}}
+  \begin{tabular}{@{}p{0.31\textwidth} p{0.39\textwidth} c@{}}
     \toprule
     Method & Direction estimator & RMS overlap \\
     \midrule
@@ -232,7 +232,7 @@ Directions should be usable individually without moving along other named coordi
     Direct composition & Joint-ridge partial effects & $.103 \pm .001$ \\
     ConceptBasis & Joint-ridge partial effects & $\mathbf{.056 \pm .002}$ \\
     \bottomrule
-  \end{tabularx}
+  \end{tabular}
 \end{table}
 
 Direct composition reduces overlap incidentally, but leaves almost twice as much as ConceptBasis. Its retrieval objective can therefore succeed without producing the same separated geometry.
@@ -241,12 +241,12 @@ Direct composition reduces overlap incidentally, but leaves almost twice as much
 
 Directions should also combine without repeatedly counting shared components. We test this with ten-attribute compositional retrieval on the 278 class-disjoint test images.
 
-\begin{table}[H]
+\begin{table}[h!]
   \centering
   \caption{Additive composition and ordinary retrieval.}
   \label{tab:additive-composition}
   \small
-  \begin{tabularx}{\textwidth}{@{}X c c@{}}
+  \begin{tabular}{@{}p{0.38\textwidth} c c@{}}
     \toprule
     Method & Compositional R@5 & Bidirectional image--text R@5 \\
     \midrule
@@ -254,7 +254,7 @@ Directions should also combine without repeatedly counting shared components. We
     Direct composition & $\mathbf{.823 \pm .003}$ & $.968 \pm .001$ \\
     ConceptBasis & $.730 \pm .005$ & $.966 \pm .002$ \\
     \bottomrule
-  \end{tabularx}
+  \end{tabular}
 \end{table}
 
 While direct composability training predictably performs the best on the task it explicitly optimizes, ConceptBasis nevertheless captures most of this improvement without compositional supervision, while producing substantially less direction overlap. Bidirectional image--text retrieval is nearly unchanged across the three conditions.
@@ -263,12 +263,30 @@ While direct composability training predictably performs the best on the task it
 
 Each coordinate should predict the presence of its named concept. We measure macro AUROC on all 3,982 test images, restricting every method to the 174 concept names shared with SpLiCE's native LAION-10K vocabulary.
 
-\begin{table}[H]
+Group means perform best on named-coordinate readout ($.909\pm.001$), as expected from an estimator that can use correlated concepts as predictive signal. ConceptBasis retains strong readout ($.868\pm.002$) while producing much lower direction overlap. SpLiCE reaches $.536$ with its native OpenCLIP setup and optimizes reconstruction rather than individual coefficient meanings, allowing correlated or more specific atoms to substitute for the exact named atom. Table~\ref{tab:named-coordinate} reports the complete comparison.
+
+At $\lambda=.25$, SpLiCE activates 13.5 atoms per image on average. Nevertheless, the exact-name atom is zero for 92.7\% of positive images on average across concepts, and 41 of 174 concepts never activate on any positive test image. Table~\ref{tab:splice-substitution} gives development examples in which nearby atoms reconstruct the embedding while the intended named coefficient remains zero.
+
+\section{Limitations}
+
+Image labels are synthetic data produced by a multimodal language model and may inherit its annotation errors.
+
+Estimated partial effects control only for concepts present in the dictionary, so the adapter is not penalized for overlap with omitted concepts. Therefore, ridge regression does not isolate a perfect causal effect.
+
+\section{Conclusion}
+
+Concept directions derived from linear probes or differences between group means are widely used for readout, steering, and debiasing. However, existing techniques produce directions for semantically independent concepts containing substantial components of one another, resulting in cross-talk during editing and repeated counting of shared components during additive composition. We distinguish this goal from alternatives such as SpLiCE and direct composability training. ConceptBasis estimates partial concept effects with ridge regression and trains lightweight adapters to reduce their remaining overlap, substantially reducing cross-talk and improving additive retrieval while preserving bidirectional image--text retrieval and named-coordinate readout. In conclusion, we show that the linear representation hypothesis can be extended to create an additive, separable coordinate system of semantic concepts.
+
+\clearpage
+\appendix
+\section{Additional SpLiCE results}
+
+\begin{table}[h!]
   \centering
   \caption{Named-coordinate readout on the 174 concepts shared with SpLiCE.}
   \label{tab:named-coordinate}
   \small
-  \begin{tabularx}{\textwidth}{@{}X X c@{}}
+  \begin{tabular}{@{}p{0.36\textwidth} p{0.28\textwidth} @{\hspace{1.5em}} r@{}}
     \toprule
     Method & Coefficient & Coordinate AUROC \\
     \midrule
@@ -277,44 +295,27 @@ Each coordinate should predict the presence of its named concept. We measure mac
     SpLiCE (native LAION-10K, $\lambda=.25$) & Sparse atom weight & $.536$ \\
     ConceptBasis & Standardized projection & $.868 \pm .002$ \\
     \bottomrule
-  \end{tabularx}
+  \end{tabular}
 \end{table}
 
-Group means perform best on named-coordinate readout, as expected from an estimator that can use correlated concepts as predictive signal. ConceptBasis retains strong readout while producing much lower direction overlap. SpLiCE uses its native OpenCLIP setup and optimizes reconstruction rather than individual coefficient meanings, allowing correlated or more specific atoms to substitute for the exact named atom.
-
-At $\lambda=.25$, SpLiCE activates 13.5 atoms per image on average. Nevertheless, the exact-name atom is zero for 92.7\% of positive images on average across concepts, and 41 of 174 concepts never activate on any positive test image. Development examples show the resulting substitutions:
-
-\begin{table}[H]
+\begin{table}[h!]
   \centering
-  \caption{Examples of coefficient substitution in SpLiCE.}
+  \caption{Development examples of coefficient substitution in SpLiCE.}
   \label{tab:splice-substitution}
   \small
-  \begin{tabularx}{\textwidth}{@{}l l X@{}}
+  \begin{tabular}{@{}p{0.14\textwidth} p{0.24\textwidth} p{0.50\textwidth}@{}}
     \toprule
-    Positive image & Zero exact-name coefficient & Largest nonzero atoms include \\
+    \shortstack[l]{Positive\\image} & \shortstack[l]{Zero exact-name\\coefficient} & Largest nonzero atoms include \\
     \midrule
     \texttt{tortilla} & \texttt{edible} & \texttt{tortilla}, \texttt{recipe}, \texttt{pancakes} \\
     \texttt{stereo} & \texttt{electronic} & \texttt{stereo}, \texttt{radio}, \texttt{cassette} \\
     \texttt{strawberry} & \texttt{fruit} & \texttt{strawberry}, \texttt{nutritional}, \texttt{produce} \\
     \texttt{tiger} & \texttt{animal} & \texttt{tiger}, \texttt{snowy}, \texttt{threatened}, \texttt{wildlife} \\
     \bottomrule
-  \end{tabularx}
+  \end{tabular}
 \end{table}
 
-These atoms can reconstruct the embedding while leaving the intended named coefficient at zero.
-
-\section{Limitations}
-
-Image labels are synthetic data produced by a multimodal language model and may inherit its annotation errors.
-
-Estimated partial effects control only for concepts present in the dictionary, so the adapter is not penalized for overlap with omitted concepts. Therefore, ridge regression does not isolate a perfect causal effect.
-
-\Needspace{8\baselineskip}
-\section{Conclusion}
-
-Concept directions derived from linear probes or differences between group means are widely used for readout, steering, and debiasing. However, existing techniques produce directions for semantically independent concepts containing substantial components of one another, resulting in cross-talk during editing and repeated counting of shared components during additive composition. We also identify weaknesses in alternative approaches such as SpLiCE and direct composability training. ConceptBasis estimates partial concept effects with ridge regression and trains lightweight adapters to reduce their remaining overlap, substantially reducing cross-talk and improving additive retrieval while preserving bidirectional image--text retrieval and named-coordinate readout. In conclusion, we show that the linear representation hypothesis can be extended to create an additive, separable coordinate system of semantic concepts.
-
-\bibliographystyle{plainnat}
+\FloatBarrier
 \bibliography{references}
 
 \end{document}
