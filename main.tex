@@ -1,11 +1,7 @@
 \documentclass[mlmain,onecolumn]{jmlr}
+\jmlrpmlr % replace the class's "Under Review" header with the PMLR one
 
-% NeurReps 2026 Proceedings review watermark. Remove these four commands for
-% the camera-ready version, as required by the official template.
-\usepackage[hpos=300px,vpos=70px]{draftwatermark}
-\SetWatermarkText{\test}
-\SetWatermarkScale{1}
-\SetWatermarkAngle{0}
+%%% Link to code: https://github.com/markjouh/conceptbasis
 
 % amsmath, amssymb, natbib, graphicx, url, algorithm2e, xcolor, and hyperref
 % are loaded by the official jmlr class.
@@ -16,14 +12,19 @@
 
 \graphicspath{{figures/}}
 
-% NeurReps 2026 metadata. Author information must remain absent for review.
+% NeurReps 2026 metadata.
 \jmlrvolume{}
 \firstpageno{1}
 \editors{List of editors' names}
 \jmlryear{2026}
 \jmlrworkshop{Symmetry and Geometry in Neural Representations}
 \title[ConceptBasis]{ConceptBasis}
-\hypersetup{pdfauthor={},pdftitle={ConceptBasis}}
+\author{\Name{Xinyun Zhou} \Email{markjouh@icloud.com}\\
+  \addr University of Wisconsin--Madison
+  \AND
+  \Name{Walter Gerych} \Email{wgerych@wpi.edu}\\
+  \addr Worcester Polytechnic Institute}
+\hypersetup{pdfauthor={Xinyun Zhou, Walter Gerych},pdftitle={ConceptBasis}}
 
 \begin{document}
 \maketitle
@@ -64,6 +65,7 @@ Our contributions are:
   \item We introduce ConceptBasis, which constructs its concept dictionary and labels, estimates partial concept effects with joint ridge regression, and trains lightweight image and text adapters to reduce their remaining overlap while preserving contrastive alignment.
   \item We introduce a class-disjoint compositional retrieval evaluation on THINGS and show that ConceptBasis improves geometric separability and additive retrieval without sacrificing bidirectional image--text retrieval.
 \end{itemize}
+Code is available at \url{https://github.com/markjouh/conceptbasis}.
 
 \section{Related Work}
 
