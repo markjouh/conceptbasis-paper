@@ -12,7 +12,8 @@ requires.
 ## Build
 
 ```bash
-latexmk -pdf -interaction=nonstopmode -halt-on-error figures/dictionary-pipeline.tex
+python3 figures/dictionary-pipeline.py  # regenerates the TikZ source from figures/dictionary-pipeline.json
+latexmk -pdf -interaction=nonstopmode -halt-on-error -cd figures/dictionary-pipeline.tex
 latexmk -pdf -interaction=nonstopmode -halt-on-error main.tex
 ```
 

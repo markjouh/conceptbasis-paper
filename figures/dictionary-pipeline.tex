@@ -1,75 +1,211 @@
-\documentclass[tikz,border=6pt]{standalone}
-\usetikzlibrary{arrows.meta,positioning}
-\usepackage{graphicx}
-
+\RequirePackage{fix-cm}
+\documentclass[tikz,border=0pt]{standalone}
+\usepackage{tcolorbox}
+\usetikzlibrary{arrows.meta}
 \definecolor{conceptred}{HTML}{C83E3A}
 \definecolor{axisgray}{HTML}{3F4650}
 \definecolor{pointgray}{HTML}{B8BEC7}
 \definecolor{roundblue}{HTML}{3973A8}
-
+\colorlet{heatbase}{pointgray!14}
+\colorlet{nolabel}{pointgray!30}
+\newtcbox{\tagchip}[1][]{on line, size=fbox, boxrule=.35pt, arc=1.1pt,
+  boxsep=0pt, left=.62mm, right=.62mm, top=.42mm, bottom=.42mm,
+  colback=pointgray!16, colframe=pointgray, coltext=axisgray,
+  fontupper=\fontsize{6}{7.2}\selectfont, #1}
 \tikzset{
-  num/.style={font=\small\bfseries, text=axisgray!70, anchor=east},
-  photo/.style={inner sep=0pt, draw=axisgray!55, line width=.5pt},
-  chip/.style={rounded corners=2pt, draw=roundblue!55, line width=.4pt,
-               fill=roundblue!10, font=\scriptsize, text=axisgray,
-               minimum width=13mm, minimum height=4.2mm, inner sep=0pt},
-  phrase/.style={font=\scriptsize\ttfamily, text=axisgray, anchor=east},
-  flow/.style={-{Latex[length=1.6mm]}, line width=.5pt, draw=axisgray!70}
+  title/.style={font=\fontsize{8}{9.6}\selectfont\bfseries, text=axisgray,
+                anchor=base west, inner sep=0pt},
+  subtitle/.style={font=\fontsize{6}{7.2}\selectfont, text=axisgray!72,
+                   anchor=base west, inner sep=0pt},
+  plain/.style={font=\fontsize{6}{7.2}\selectfont, text=axisgray, inner sep=0pt},
+  concept/.style={font=\fontsize{6.5}{7.8}\selectfont\bfseries, inner sep=0pt},
+  photo/.style={inner sep=0pt, anchor=north west},
+  frame/.style={draw=axisgray!45, line width=.35pt},
+  divider/.style={draw=pointgray!75, line width=.3pt},
 }
-
-% #1 = y baseline, #2 = index/intensity list
-\newcommand{\heat}[2]{%
-  \foreach \i/\v in {#2}{
-    \fill[roundblue, fill opacity=\v] (\i*.1195,#1) rectangle ++(.108,.24);}}
-
 \begin{document}
-\begin{tikzpicture}[font=\small]
-
-%% ---- 1. open tagging ---------------------------------------------------
-\node[num] at (-.25,0) {1};
-\foreach \g/\x/\ta/\tb/\tc in {%
-    artichoke/.6/green/leafy/edible,
-    trombone/4.0/gold/metallic/curved,
-    cow/7.4/black/spotted/animal}{
-  \node[photo] (im\g) at (\x,0) {\includegraphics[width=12mm]{assets/\g.jpg}};
-  \draw[flow] (im\g.east) -- ++(.3,0);
-  \node[chip] at (\x+1.6,.45)  {\ta};
-  \node[chip] at (\x+1.6,0)    {\tb};
-  \node[chip] at (\x+1.6,-.45) {\tc};
-}
-
-%% ---- 2. profile and cluster --------------------------------------------
-\node[num] at (-.25,-1.95) {2};
-\node[phrase] at (1.9,-1.43) {red};
-\node[phrase] (crim) at (1.9,-1.73) {crimson};
-\draw[axisgray!70,line width=.4pt]
-  ([xshift=-1pt]crim.west) -- ([xshift=1pt]crim.east);
-\node[phrase] at (1.9,-2.18) {wooden};
-\node[phrase] at (1.9,-2.48) {cylindrical};
-
-\begin{scope}[shift={(2.0,0)}]
-  \heat{-1.55}{0/0.45,1/0.56,2/0.92,3/0.47,4/0.51,5/0.59,6/0.18,7/0.51,8/0.63,9/0.79,10/0.09,11/0.30,12/0.09,13/0.81,14/0.69,15/0.04,16/0.98,17/0.96,18/0.65,19/0.62,20/0.16,21/0.02,22/0.53,23/0.06,24/0.19,25/0.24,26/0.03,27/0.46,28/0.44,29/0.84,30/0.52,31/0.64,32/0.50,33/0.66,34/0.46,35/0.28,36/1.00,37/1.00,38/0.84,39/0.71,40/0.32,41/0.23,42/0.29,43/0.07,44/0.77,45/0.40,46/0.85,47/0.39,48/0.96,49/0.85,50/0.00,51/0.21,52/0.91,53/0.47,54/0.98,55/0.40,56/0.07,57/0.63,58/0.78,59/0.27,60/0.09,61/0.33,62/0.96,63/0.76}
-  \heat{-1.85}{0/0.36,1/0.50,2/0.82,3/0.36,4/0.58,5/0.51,6/0.19,7/0.50,8/0.56,9/0.85,10/0.00,11/0.33,12/0.00,13/0.79,14/0.62,15/0.00,16/1.00,17/1.00,18/0.60,19/0.71,20/0.09,21/0.00,22/0.62,23/0.09,24/0.09,25/0.36,26/0.00,27/0.40,28/0.51,29/0.80,30/0.47,31/0.54,32/0.40,33/0.68,34/0.40,35/0.30,36/0.97,37/0.99,38/0.95,39/0.71,40/0.34,41/0.32,42/0.21,43/0.00,44/0.87,45/0.48,46/0.79,47/0.32,48/1.00,49/0.96,50/0.00,51/0.32,52/1.00,53/0.49,54/0.96,55/0.30,56/0.00,57/0.74,58/0.72,59/0.32,60/0.03,61/0.41,62/0.98,63/0.71}
-  \heat{-2.30}{0/0.18,1/0.72,2/0.07,3/0.23,4/0.56,5/0.85,6/0.61,7/0.28,8/0.92,9/0.20,10/0.02,11/0.27,12/0.45,13/0.06,14/0.18,15/0.37,16/0.57,17/0.13,18/0.36,19/0.89,20/0.98,21/0.66,22/0.69,23/0.58,24/0.14,25/0.04,26/0.02,27/0.91,28/0.70,29/0.96,30/0.02,31/0.64,32/0.48,33/0.73,34/0.32,35/1.00,36/0.08,37/0.55,38/0.74,39/0.90,40/0.74,41/0.70,42/0.79,43/0.92,44/0.35,45/0.69,46/0.90,47/0.87,48/0.42,49/0.79,50/0.86,51/0.57,52/0.62,53/0.38,54/0.58,55/0.61,56/0.08,57/0.64,58/0.99,59/0.88,60/0.73,61/0.39,62/0.74,63/0.58}
-  \heat{-2.60}{0/0.44,1/0.84,2/0.08,3/0.75,4/0.03,5/0.60,6/0.48,7/0.23,8/0.70,9/0.50,10/0.61,11/0.92,12/0.26,13/0.01,14/0.30,15/0.68,16/0.20,17/0.17,18/0.91,19/0.66,20/0.44,21/0.89,22/0.33,23/0.67,24/0.20,25/0.43,26/0.81,27/0.91,28/0.88,29/0.38,30/0.58,31/0.32,32/0.14,33/0.50,34/0.84,35/0.85,36/0.71,37/0.95,38/0.28,39/0.17,40/0.45,41/0.28,42/0.21,43/0.41,44/0.63,45/0.49,46/0.32,47/0.84,48/0.98,49/0.45,50/0.07,51/0.03,52/0.87,53/0.04,54/0.71,55/0.57,56/0.31,57/0.79,58/0.02,59/0.14,60/0.45,61/0.02,62/0.83,63/0.24}
-\end{scope}
-
-%% ---- 3. exhaustive labelling -------------------------------------------
-\node[num] at (-.25,-3.79) {3};
-\node[photo] (row) at (1.4,-3.734) {\includegraphics[width=8mm]{assets/cow.jpg}};
-\draw[flow] (row.east) -- (1.94,-3.734);
-
-\begin{scope}[shift={(2.0,-3.31)}]
-  \foreach \r in {0,...,9}{\foreach \c in {0,...,63}{
-      \fill[pointgray!35] (\c*.1195,-\r*.1195) rectangle ++(.108,.108);}}
-  \foreach \r/\c in {0/1,0/12,0/25,0/54,0/59,0/61,1/11,1/33,1/41,1/59,2/42,2/53,
-    2/55,3/2,3/11,3/21,3/45,3/48,4/1,4/6,4/19,4/22,4/29,4/41,4/43,4/49,4/52,5/5,
-    5/36,5/37,5/43,5/44,5/54,6/10,6/11,6/17,6/20,6/58,7/1,7/4,7/5,7/8,7/50,7/56,
-    7/60,8/20,8/30,8/48,8/52,9/10,9/22,9/28,9/63}{
-      \fill[conceptred] (\c*.1195,-\r*.1195) rectangle ++(.108,.108);}
-  \draw[axisgray!55,line width=.5pt]
-    (-.014,-.484) rectangle (7.655,-.364);
-\end{scope}
-
+\begin{tikzpicture}[x=1mm, y=1mm]
+\useasboundingbox (0,0) rectangle (152.4,-44.6);
+\draw[divider] (47.5,-0.6) -- (47.5,-44);
+\draw[divider] (105.5,-0.6) -- (105.5,-44);
+\node[title] at (0,-3) {(1) Collect open tags};
+\node[subtitle] at (0,-6.6) {18,211 training images $\to$ 1,349 phrases};
+\node[photo] at (0,-8.9) {\includegraphics[width=10mm,height=10mm]{assets/hamster.jpg}};
+\draw[frame] (0,-8.9) rectangle ++(10,-10);
+\node[anchor=west, inner sep=0pt, text width=35.1mm, align=left, font=\fontsize{6}{11}\selectfont] at (11.4,-13.9) {\tagchip{tan}\hspace{.6mm}\allowbreak\tagchip{furry}\hspace{.6mm}\allowbreak\tagchip{small}\hspace{.6mm}\allowbreak\tagchip{animal}\hspace{.6mm}\allowbreak\tagchip{natural}\hspace{.6mm}\allowbreak\tagchip{living}};
+\node[photo] at (0,-21.45) {\includegraphics[width=10mm,height=10mm]{assets/teddy_bear.jpg}};
+\draw[frame] (0,-21.45) rectangle ++(10,-10);
+\node[anchor=west, inner sep=0pt, text width=35.1mm, align=left, font=\fontsize{6}{11}\selectfont] at (11.4,-26.45) {\tagchip{brown}\hspace{.6mm}\allowbreak\tagchip{fuzzy}\hspace{.6mm}\allowbreak\tagchip{soft}\hspace{.6mm}\allowbreak\tagchip{manmade}\hspace{.6mm}\allowbreak\tagchip{toy}\hspace{.6mm}\allowbreak\tagchip{plush}};
+\node[photo] at (0,-34) {\includegraphics[width=10mm,height=10mm]{assets/chair.jpg}};
+\draw[frame] (0,-34) rectangle ++(10,-10);
+\node[anchor=west, inner sep=0pt, text width=35.1mm, align=left, font=\fontsize{6}{11}\selectfont] at (11.4,-39) {\tagchip{brown}\hspace{.6mm}\allowbreak\tagchip{wood}\hspace{.6mm}\allowbreak\tagchip{smooth}\hspace{.6mm}\allowbreak\tagchip{rigid}\hspace{.6mm}\allowbreak\tagchip{manmade}\hspace{.6mm}\allowbreak\tagchip{furniture}\hspace{.6mm}\allowbreak\tagchip{indoor}};
+\node[title] at (49.4,-3) {(2) Merge synonyms by usage};
+\node[subtitle] at (49.4,-6.6) {642 phrases $\to$ 303 clusters $\to$ 256 concepts};
+\node[plain, text=axisgray!72, anchor=base] at (75.05,-10.4) {training classes};
+\draw[pointgray, line width=.3pt] (59.2,-11.3) -- (90.9,-11.3);
+\node[plain, rotate=90, anchor=west] at (60.3,-22.65) {hamster};
+\node[plain, rotate=90, anchor=west] at (62.75,-22.65) {fox};
+\node[plain, rotate=90, anchor=west] at (65.2,-22.65) {fur coat};
+\node[plain, rotate=90, anchor=west] at (68.5,-22.65) {towel};
+\node[plain, rotate=90, anchor=west] at (70.95,-22.65) {cushion};
+\node[plain, rotate=90, anchor=west] at (73.4,-22.65) {mattress};
+\node[plain, rotate=90, anchor=west] at (76.7,-22.65) {log};
+\node[plain, rotate=90, anchor=west] at (79.15,-22.65) {birdhouse};
+\node[plain, rotate=90, anchor=west] at (81.6,-22.65) {easel};
+\node[plain, rotate=90, anchor=west] at (84.9,-22.65) {bear};
+\node[plain, rotate=90, anchor=west] at (87.35,-22.65) {brownie};
+\node[plain, rotate=90, anchor=west] at (89.8,-22.65) {saddle};
+\node[plain, anchor=east] at (58.1,-24.43) {fluffy};
+\fill[roundblue!100!heatbase] (59.2,-23.45) rectangle ++(2.2,-1.95);
+\fill[roundblue!80!heatbase] (61.65,-23.45) rectangle ++(2.2,-1.95);
+\fill[roundblue!99!heatbase] (64.1,-23.45) rectangle ++(2.2,-1.95);
+\fill[roundblue!18!heatbase] (67.4,-23.45) rectangle ++(2.2,-1.95);
+\fill[roundblue!21!heatbase] (69.85,-23.45) rectangle ++(2.2,-1.95);
+\fill[roundblue!12!heatbase] (72.3,-23.45) rectangle ++(2.2,-1.95);
+\fill[roundblue!11!heatbase] (75.6,-23.45) rectangle ++(2.2,-1.95);
+\fill[roundblue!11!heatbase] (78.05,-23.45) rectangle ++(2.2,-1.95);
+\fill[roundblue!0!heatbase] (80.5,-23.45) rectangle ++(2.2,-1.95);
+\fill[roundblue!60!heatbase] (83.8,-23.45) rectangle ++(2.2,-1.95);
+\fill[roundblue!0!heatbase] (86.25,-23.45) rectangle ++(2.2,-1.95);
+\fill[roundblue!0!heatbase] (88.7,-23.45) rectangle ++(2.2,-1.95);
+\node[plain, anchor=east] at (58.1,-26.68) {fuzzy};
+\fill[roundblue!63!heatbase] (59.2,-25.7) rectangle ++(2.2,-1.95);
+\fill[roundblue!71!heatbase] (61.65,-25.7) rectangle ++(2.2,-1.95);
+\fill[roundblue!91!heatbase] (64.1,-25.7) rectangle ++(2.2,-1.95);
+\fill[roundblue!2!heatbase] (67.4,-25.7) rectangle ++(2.2,-1.95);
+\fill[roundblue!0!heatbase] (69.85,-25.7) rectangle ++(2.2,-1.95);
+\fill[roundblue!0!heatbase] (72.3,-25.7) rectangle ++(2.2,-1.95);
+\fill[roundblue!13!heatbase] (75.6,-25.7) rectangle ++(2.2,-1.95);
+\fill[roundblue!15!heatbase] (78.05,-25.7) rectangle ++(2.2,-1.95);
+\fill[roundblue!0!heatbase] (80.5,-25.7) rectangle ++(2.2,-1.95);
+\fill[roundblue!67!heatbase] (83.8,-25.7) rectangle ++(2.2,-1.95);
+\fill[roundblue!0!heatbase] (86.25,-25.7) rectangle ++(2.2,-1.95);
+\fill[roundblue!0!heatbase] (88.7,-25.7) rectangle ++(2.2,-1.95);
+\node[plain, anchor=east] at (58.1,-28.93) {furry};
+\fill[roundblue!99!heatbase] (59.2,-27.95) rectangle ++(2.2,-1.95);
+\fill[roundblue!100!heatbase] (61.65,-27.95) rectangle ++(2.2,-1.95);
+\fill[roundblue!100!heatbase] (64.1,-27.95) rectangle ++(2.2,-1.95);
+\fill[roundblue!8!heatbase] (67.4,-27.95) rectangle ++(2.2,-1.95);
+\fill[roundblue!7!heatbase] (69.85,-27.95) rectangle ++(2.2,-1.95);
+\fill[roundblue!0!heatbase] (72.3,-27.95) rectangle ++(2.2,-1.95);
+\fill[roundblue!14!heatbase] (75.6,-27.95) rectangle ++(2.2,-1.95);
+\fill[roundblue!12!heatbase] (78.05,-27.95) rectangle ++(2.2,-1.95);
+\fill[roundblue!0!heatbase] (80.5,-27.95) rectangle ++(2.2,-1.95);
+\fill[roundblue!74!heatbase] (83.8,-27.95) rectangle ++(2.2,-1.95);
+\fill[roundblue!0!heatbase] (86.25,-27.95) rectangle ++(2.2,-1.95);
+\fill[roundblue!0!heatbase] (88.7,-27.95) rectangle ++(2.2,-1.95);
+\node[plain, anchor=east] at (58.1,-31.18) {hairy};
+\fill[roundblue!69!heatbase] (59.2,-30.2) rectangle ++(2.2,-1.95);
+\fill[roundblue!71!heatbase] (61.65,-30.2) rectangle ++(2.2,-1.95);
+\fill[roundblue!90!heatbase] (64.1,-30.2) rectangle ++(2.2,-1.95);
+\fill[roundblue!5!heatbase] (67.4,-30.2) rectangle ++(2.2,-1.95);
+\fill[roundblue!0!heatbase] (69.85,-30.2) rectangle ++(2.2,-1.95);
+\fill[roundblue!0!heatbase] (72.3,-30.2) rectangle ++(2.2,-1.95);
+\fill[roundblue!30!heatbase] (75.6,-30.2) rectangle ++(2.2,-1.95);
+\fill[roundblue!9!heatbase] (78.05,-30.2) rectangle ++(2.2,-1.95);
+\fill[roundblue!0!heatbase] (80.5,-30.2) rectangle ++(2.2,-1.95);
+\fill[roundblue!70!heatbase] (83.8,-30.2) rectangle ++(2.2,-1.95);
+\fill[roundblue!0!heatbase] (86.25,-30.2) rectangle ++(2.2,-1.95);
+\fill[roundblue!0!heatbase] (88.7,-30.2) rectangle ++(2.2,-1.95);
+\draw[axisgray!80, line width=.45pt] (92,-23.45) -- ++(.75,0) -- (92.75,-32.15) -- ++(-.75,0);
+\node[concept, anchor=west, text=axisgray] at (93.6,-27.8) {furry};
+\node[plain, anchor=east] at (58.1,-34.38) {soft};
+\fill[roundblue!39!heatbase] (59.2,-33.4) rectangle ++(2.2,-1.95);
+\fill[roundblue!28!heatbase] (61.65,-33.4) rectangle ++(2.2,-1.95);
+\fill[roundblue!58!heatbase] (64.1,-33.4) rectangle ++(2.2,-1.95);
+\fill[roundblue!70!heatbase] (67.4,-33.4) rectangle ++(2.2,-1.95);
+\fill[roundblue!58!heatbase] (69.85,-33.4) rectangle ++(2.2,-1.95);
+\fill[roundblue!52!heatbase] (72.3,-33.4) rectangle ++(2.2,-1.95);
+\fill[roundblue!0!heatbase] (75.6,-33.4) rectangle ++(2.2,-1.95);
+\fill[roundblue!0!heatbase] (78.05,-33.4) rectangle ++(2.2,-1.95);
+\fill[roundblue!0!heatbase] (80.5,-33.4) rectangle ++(2.2,-1.95);
+\fill[roundblue!28!heatbase] (83.8,-33.4) rectangle ++(2.2,-1.95);
+\fill[roundblue!4!heatbase] (86.25,-33.4) rectangle ++(2.2,-1.95);
+\fill[roundblue!15!heatbase] (88.7,-33.4) rectangle ++(2.2,-1.95);
+\draw[axisgray!80, line width=.45pt] (92,-33.4) -- ++(.75,0) -- (92.75,-35.35) -- ++(-.75,0);
+\node[concept, anchor=west, text=axisgray] at (93.6,-34.38) {soft};
+\node[plain, anchor=east] at (58.1,-37.58) {wood};
+\fill[roundblue!0!heatbase] (59.2,-36.6) rectangle ++(2.2,-1.95);
+\fill[roundblue!6!heatbase] (61.65,-36.6) rectangle ++(2.2,-1.95);
+\fill[roundblue!3!heatbase] (64.1,-36.6) rectangle ++(2.2,-1.95);
+\fill[roundblue!0!heatbase] (67.4,-36.6) rectangle ++(2.2,-1.95);
+\fill[roundblue!0!heatbase] (69.85,-36.6) rectangle ++(2.2,-1.95);
+\fill[roundblue!2!heatbase] (72.3,-36.6) rectangle ++(2.2,-1.95);
+\fill[roundblue!92!heatbase] (75.6,-36.6) rectangle ++(2.2,-1.95);
+\fill[roundblue!63!heatbase] (78.05,-36.6) rectangle ++(2.2,-1.95);
+\fill[roundblue!69!heatbase] (80.5,-36.6) rectangle ++(2.2,-1.95);
+\fill[roundblue!5!heatbase] (83.8,-36.6) rectangle ++(2.2,-1.95);
+\fill[roundblue!1!heatbase] (86.25,-36.6) rectangle ++(2.2,-1.95);
+\fill[roundblue!0!heatbase] (88.7,-36.6) rectangle ++(2.2,-1.95);
+\node[plain, anchor=east] at (58.1,-39.83) {wooden};
+\fill[roundblue!0!heatbase] (59.2,-38.85) rectangle ++(2.2,-1.95);
+\fill[roundblue!0!heatbase] (61.65,-38.85) rectangle ++(2.2,-1.95);
+\fill[roundblue!3!heatbase] (64.1,-38.85) rectangle ++(2.2,-1.95);
+\fill[roundblue!0!heatbase] (67.4,-38.85) rectangle ++(2.2,-1.95);
+\fill[roundblue!0!heatbase] (69.85,-38.85) rectangle ++(2.2,-1.95);
+\fill[roundblue!5!heatbase] (72.3,-38.85) rectangle ++(2.2,-1.95);
+\fill[roundblue!79!heatbase] (75.6,-38.85) rectangle ++(2.2,-1.95);
+\fill[roundblue!70!heatbase] (78.05,-38.85) rectangle ++(2.2,-1.95);
+\fill[roundblue!69!heatbase] (80.5,-38.85) rectangle ++(2.2,-1.95);
+\fill[roundblue!0!heatbase] (83.8,-38.85) rectangle ++(2.2,-1.95);
+\fill[roundblue!0!heatbase] (86.25,-38.85) rectangle ++(2.2,-1.95);
+\fill[roundblue!7!heatbase] (88.7,-38.85) rectangle ++(2.2,-1.95);
+\draw[axisgray!80, line width=.45pt] (92,-36.6) -- ++(.75,0) -- (92.75,-40.8) -- ++(-.75,0);
+\node[concept, anchor=west, text=axisgray] at (93.6,-38.7) {wooden};
+\node[plain, anchor=east] at (58.1,-43.03) {brown};
+\fill[roundblue!3!heatbase] (59.2,-42.05) rectangle ++(2.2,-1.95);
+\fill[roundblue!23!heatbase] (61.65,-42.05) rectangle ++(2.2,-1.95);
+\fill[roundblue!12!heatbase] (64.1,-42.05) rectangle ++(2.2,-1.95);
+\fill[roundblue!0!heatbase] (67.4,-42.05) rectangle ++(2.2,-1.95);
+\fill[roundblue!0!heatbase] (69.85,-42.05) rectangle ++(2.2,-1.95);
+\fill[roundblue!0!heatbase] (72.3,-42.05) rectangle ++(2.2,-1.95);
+\fill[roundblue!34!heatbase] (75.6,-42.05) rectangle ++(2.2,-1.95);
+\fill[roundblue!0!heatbase] (78.05,-42.05) rectangle ++(2.2,-1.95);
+\fill[roundblue!19!heatbase] (80.5,-42.05) rectangle ++(2.2,-1.95);
+\fill[roundblue!55!heatbase] (83.8,-42.05) rectangle ++(2.2,-1.95);
+\fill[roundblue!66!heatbase] (86.25,-42.05) rectangle ++(2.2,-1.95);
+\fill[roundblue!54!heatbase] (88.7,-42.05) rectangle ++(2.2,-1.95);
+\draw[axisgray!80, line width=.45pt] (92,-42.05) -- ++(.75,0) -- (92.75,-44) -- ++(-.75,0);
+\node[concept, anchor=west, text=axisgray] at (93.6,-43.03) {brown};
+\node[title] at (107,-3) {(3) Label every concept};
+\fill[axisgray] (107,-6.75) rectangle ++(1.9,1.9);
+\node[subtitle] at (109.6,-6.6) {yes};
+\fill[nolabel] (115.39,-6.75) rectangle ++(1.9,1.9);
+\node[subtitle] at (117.99,-6.6) {no};
+\node[subtitle] at (122.65,-6.6) {for all 256 concepts};
+\node[photo] at (120,-8.9) {\includegraphics[width=10mm,height=10mm]{assets/hamster.jpg}};
+\draw[frame] (120,-8.9) rectangle ++(10,-10);
+\node[photo] at (131,-8.9) {\includegraphics[width=10mm,height=10mm]{assets/teddy_bear.jpg}};
+\draw[frame] (131,-8.9) rectangle ++(10,-10);
+\node[photo] at (142,-8.9) {\includegraphics[width=10mm,height=10mm]{assets/chair.jpg}};
+\draw[frame] (142,-8.9) rectangle ++(10,-10);
+\node[concept, anchor=east, text=axisgray] at (118.8,-21.55) {furry};
+\fill[axisgray, rounded corners=.35mm] (120.5,-20.4) rectangle ++(9,-2.3);
+\fill[axisgray, rounded corners=.35mm] (131.5,-20.4) rectangle ++(9,-2.3);
+\fill[nolabel, rounded corners=.35mm] (142.5,-20.4) rectangle ++(9,-2.3);
+\node[concept, anchor=east, text=axisgray] at (118.8,-24.9) {soft};
+\fill[axisgray, rounded corners=.35mm] (120.5,-23.75) rectangle ++(9,-2.3);
+\fill[axisgray, rounded corners=.35mm] (131.5,-23.75) rectangle ++(9,-2.3);
+\fill[nolabel, rounded corners=.35mm] (142.5,-23.75) rectangle ++(9,-2.3);
+\node[concept, anchor=east, text=axisgray] at (118.8,-28.25) {wooden};
+\fill[nolabel, rounded corners=.35mm] (120.5,-27.1) rectangle ++(9,-2.3);
+\fill[nolabel, rounded corners=.35mm] (131.5,-27.1) rectangle ++(9,-2.3);
+\fill[axisgray, rounded corners=.35mm] (142.5,-27.1) rectangle ++(9,-2.3);
+\node[concept, anchor=east, text=axisgray] at (118.8,-31.6) {brown};
+\fill[axisgray, rounded corners=.35mm] (120.5,-30.45) rectangle ++(9,-2.3);
+\fill[axisgray, rounded corners=.35mm] (131.5,-30.45) rectangle ++(9,-2.3);
+\fill[axisgray, rounded corners=.35mm] (142.5,-30.45) rectangle ++(9,-2.3);
+\node[concept, anchor=east, text=axisgray] at (118.8,-35.95) {animal};
+\fill[axisgray, rounded corners=.35mm] (120.5,-34.8) rectangle ++(9,-2.3);
+\fill[nolabel, rounded corners=.35mm] (131.5,-34.8) rectangle ++(9,-2.3);
+\fill[nolabel, rounded corners=.35mm] (142.5,-34.8) rectangle ++(9,-2.3);
+\node[concept, anchor=east, text=axisgray] at (118.8,-39.3) {toy};
+\fill[nolabel, rounded corners=.35mm] (120.5,-38.15) rectangle ++(9,-2.3);
+\fill[axisgray, rounded corners=.35mm] (131.5,-38.15) rectangle ++(9,-2.3);
+\fill[nolabel, rounded corners=.35mm] (142.5,-38.15) rectangle ++(9,-2.3);
+\node[concept, anchor=east, text=axisgray] at (118.8,-42.65) {furniture};
+\fill[nolabel, rounded corners=.35mm] (120.5,-41.5) rectangle ++(9,-2.3);
+\fill[nolabel, rounded corners=.35mm] (131.5,-41.5) rectangle ++(9,-2.3);
+\fill[axisgray, rounded corners=.35mm] (142.5,-41.5) rectangle ++(9,-2.3);
 \end{tikzpicture}
 \end{document}
