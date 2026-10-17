@@ -65,7 +65,7 @@ Our contributions are:
   \item We introduce ConceptBasis, which constructs its concept dictionary and labels, estimates partial concept effects with joint ridge regression, and trains lightweight image and text adapters to reduce their remaining overlap while preserving contrastive alignment.
   \item We introduce a class-disjoint compositional retrieval evaluation on THINGS and show that ConceptBasis improves geometric separability and additive retrieval without sacrificing bidirectional image--text retrieval.
 \end{itemize}
-Code is available at \url{https://github.com/markjouh/conceptbasis}.
+Code is available at \href{https://github.com/markjouh/conceptbasis/tree/8fe2fbc9b94f984b4ddf8be024888defa90a4a3a}{\texttt{github.com/markjouh/conceptbasis}}.
 
 \section{Related Work}
 
@@ -141,7 +141,7 @@ Training alternates ordinary minibatch contrastive updates with one full-trainin
 
 \subsection{Setup}
 
-We use the THINGS dataset \citep{hebart2019things}, with 1,298 object classes for training, 278 disjoint classes for development, and 278 disjoint classes for testing. A frozen SigLIP 2 Giant encoder \citep{tschannen2025siglip2} (\href{https://huggingface.co/timm/ViT-gopt-16-SigLIP2-384/tree/ad3410bee2c3373be5ed01e7c4e7fcd2bf95a183}{\texttt{timm/ViT-gopt-16-SigLIP2-384}}, revision \texttt{ad3410b}) produces 1,536-dimensional image and caption embeddings. We train a separate nonlinear projection head for each modality:
+We use the THINGS dataset \citep{hebart2019things}, with 1,298 object classes for training, 278 disjoint classes for development, and 278 disjoint classes for testing. A frozen SigLIP 2 Giant encoder \citep{tschannen2025siglip2} produces 1,536-dimensional image and caption embeddings. We train a separate nonlinear projection head for each modality:
 \begin{equation}
   \mathbb{R}^{1536}
   \xrightarrow{\mathrm{Linear}}
@@ -152,7 +152,7 @@ We use the THINGS dataset \citep{hebart2019things}, with 1,298 object classes fo
   \mathbb{R}^{320}.
   \label{eq:adapter}
 \end{equation}
-The image and text heads have the same architecture \eqref{eq:adapter} but separate parameters.
+The image and text heads have the same architecture \eqref{eq:adapter} but separate parameters. \appendixref{apd:implementation} lists all training and evaluation settings.
 
 \subsection{Evaluation protocol and compared methods}
 
@@ -215,7 +215,7 @@ On the contrastive-only adapter, replacing group means with partial effects redu
 
 \subsection{Comparison with other methods}
 
-We compare the complete methods along three separate properties. The direct-composition update selects 1--14 present concepts from each source image, sums their standardized directions, and retrieves that image from the training batch. Evaluation classes remain unseen during training.
+We compare the complete methods along three separate properties. Evaluation classes remain unseen during training.
 
 \subsubsection{Geometric cross-talk}
 
@@ -283,6 +283,46 @@ Concept directions derived from linear probes or differences between group means
 \bibliography{references}
 
 \appendix
+\section{Implementation details}
+\label{apd:implementation}
+
+Table~\ref{tab:implementation} lists the training and evaluation settings for every adapter condition. All reported results were produced with commit \href{https://github.com/markjouh/conceptbasis/tree/8fe2fbc9b94f984b4ddf8be024888defa90a4a3a}{\texttt{8fe2fbc}} of the released code, whose \texttt{reproduce.sh} regenerates every reported number from the released dictionary, fixed labels, and THINGS images.
+
+\begin{table}[h!]
+  \centering
+  \caption{Training and evaluation settings.}
+  \label{tab:implementation}
+  \small
+  \begin{tabular}{@{}p{0.28\textwidth} p{0.68\textwidth}@{}}
+    \toprule
+    Setting & Value \\
+    \midrule
+    \multicolumn{2}{@{}l}{\emph{Shared by all adapter conditions}} \\
+    Training data & 18,211 images and their grounded captions from the 1,298 training classes \\
+    Encoder & Frozen SigLIP 2 Giant (\href{https://huggingface.co/timm/ViT-gopt-16-SigLIP2-384/tree/ad3410bee2c3373be5ed01e7c4e7fcd2bf95a183}{\texttt{timm/ViT-gopt-16-SigLIP2-384}}, revision \texttt{ad3410b}); 1,536-dimensional image and caption embeddings \\
+    Adapters & Separate image and text MLPs \eqref{eq:adapter}; $p=320$ \\
+    Contrastive loss & Symmetric InfoNCE (softmax cross-entropy over in-batch pairs) on $\hat z_i$ and $\hat u_i$; learnable inverse temperature initialized to $1/0.07$ and capped at 100 \\
+    Optimizer & AdamW; learning rate $10^{-3}$; weight decay $10^{-4}$; cosine annealing over 30 epochs \\
+    Schedule & 30 epochs of minibatch contrastive updates on 1,024 image--caption pairs; after each epoch, one full-training-set concept update (below) \\
+    Seeds & 0--4, matched across conditions \\
+    \midrule
+    \multicolumn{2}{@{}l}{\emph{Per-epoch concept update}} \\
+    Contrastive & None \\
+    Group-mean orthogonality & One optimizer step on $\lambda_{\mathrm{orth}}\mathcal{L}_{\mathrm{orth}}$ \eqref{eq:orthogonality}, with each direction replaced by the normalized difference between the mean embeddings of images with and without the concept, in each modality; $\lambda_{\mathrm{orth}}=8$ \\
+    ConceptBasis & One optimizer step on $\lambda_{\mathrm{orth}}\mathcal{L}_{\mathrm{orth}}$ \eqref{eq:orthogonality}, with gradients through the ridge solution \eqref{eq:ridge} into both adapters; $\lambda_{\mathrm{orth}}=1024$ \\
+    Direct composition & One optimizer step on a retrieval loss with weight 1: for each of 1,024 sampled training images, a random subset of 1--14 of its present concepts is summed, with directions standardized by their training projection scale, and must retrieve its source image among the sampled images \\
+    Ridge penalty & $\alpha=0.01$, applied after dividing the centered $Z_m$ by a single gradient-free scalar so that their root-mean-square entry is 1; this rescaling does not change the directions \\
+    \midrule
+    \multicolumn{2}{@{}l}{\emph{Evaluation}} \\
+    Directions & Re-estimated from the final adapters on the full training set with the estimator named in each table; $\mu_k$ and $\sigma_k$ in \eqref{eq:coefficient} from training-set projections \\
+    Compositional retrieval & Gallery of the 278 CC0 test-class representatives; for each representative, 24 fixed-seed random orderings of its present concepts define nested queries $S$; Recall@5 over queries with $\lvert S\rvert=10$ \\
+    Ordinary retrieval & All 3,982 test image--caption pairs; mean of image-to-caption and caption-to-image Recall@5 \\
+    Coordinate readout & Macro AUROC of $c_k(x)$ over the 3,982 test images, for concepts with both positive and negative test images \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\clearpage
 \section{Additional SpLiCE results}
 
 \begin{table}[h!]
