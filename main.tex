@@ -65,7 +65,7 @@ Our contributions are:
   \item We introduce ConceptBasis, which constructs its concept dictionary and labels, estimates partial concept effects with joint ridge regression, and trains lightweight image and text adapters to reduce their remaining overlap while preserving contrastive alignment.
   \item We introduce a class-disjoint compositional retrieval evaluation on THINGS and show that ConceptBasis improves geometric separability and additive retrieval without sacrificing bidirectional image--text retrieval.
 \end{itemize}
-Code is available at \href{https://github.com/markjouh/conceptbasis/tree/c8b3712751e0a8ef990c4e4ee8093cd5cf638688}{\texttt{github.com/markjouh/conceptbasis}}.
+Code is available at \href{https://github.com/markjouh/conceptbasis/tree/786074beed8c5d23681731fbddeecc54195f0188}{\texttt{github.com/markjouh/conceptbasis}}.
 
 \section{Related Work}
 
@@ -198,7 +198,7 @@ The matched comparison changes both the orthogonality training and the direction
 
 \begin{table}[h!]
   \centering
-  \caption{Orthogonality-training ablation using partial-effect directions at evaluation.}
+  \caption{Orthogonality-training ablation using partial-effect directions at evaluation. Whitening replaces the directions with the closest exactly orthogonal set.}
   \label{tab:orthogonality-ablation}
   \small
   \begin{tabular}{@{}p{0.48\textwidth} c c@{}}
@@ -208,14 +208,15 @@ The matched comparison changes both the orthogonality training and the direction
     \shortstack{Compositional R@5\\10 attributes $\uparrow$} \\
     \midrule
     None (contrastive only) & $.111 \pm .001$ & $.575 \pm .004$ \\
+    None, then whitened after training & $0$ & $.657 \pm .004$ \\
     Group-mean directions & $.109 \pm .001$ & $.518 \pm .004$ \\
     Partial-effect directions (ConceptBasis)
-      & $\mathbf{.057 \pm .002}$ & $\mathbf{.728 \pm .005}$ \\
+      & $.057 \pm .002$ & $\mathbf{.728 \pm .005}$ \\
     \bottomrule
   \end{tabular}
 \end{table}
 
-On the contrastive-only adapter, replacing group means with partial effects reduces overlap from .171 to .111 while leaving compositional retrieval nearly unchanged (.572 versus .575). Controlling for co-occurrence therefore removes substantial statistical overlap but does not by itself produce the full additive gain. With the partial-effect estimator held fixed, group-mean orthogonality offers no improvement, whereas ConceptBasis reaches .057 overlap and .728 Recall@5. This isolates the additional contribution of training the adapter to separate the partial effects themselves.
+On the contrastive-only adapter, replacing group means with partial effects reduces overlap from .171 to .111 while leaving compositional retrieval nearly unchanged (.572 versus .575). Controlling for co-occurrence therefore removes substantial statistical overlap but does not by itself produce the full additive gain. With the partial-effect estimator held fixed, group-mean orthogonality offers no improvement, whereas ConceptBasis reaches .057 overlap and .728 Recall@5. This isolates the additional contribution of training the adapter to separate the partial effects themselves. Whitening the contrastive adapter's directions after training makes them exactly orthogonal without changing the embeddings, yet recovers only about half of ConceptBasis's gain (.657 Recall@5), suggesting that orthogonal readout axes cannot fully cancel overlap that remains in the embeddings.
 
 \subsection{Comparison with other methods}
 
@@ -303,7 +304,7 @@ ConceptBasis needs two things from the data: a fixed vocabulary of visual concep
 \section{Implementation details}
 \label{apd:implementation}
 
-Table~\ref{tab:implementation} lists the training and evaluation settings for every adapter condition. All reported results were produced with commit \href{https://github.com/markjouh/conceptbasis/tree/c8b3712751e0a8ef990c4e4ee8093cd5cf638688}{\texttt{c8b3712}} of the released code, whose \texttt{reproduce.sh} regenerates every reported number from the released dictionary, fixed labels, and THINGS images.
+Table~\ref{tab:implementation} lists the training and evaluation settings for every adapter condition. All reported results were produced with commit \href{https://github.com/markjouh/conceptbasis/tree/786074beed8c5d23681731fbddeecc54195f0188}{\texttt{786074b}} of the released code, whose \texttt{reproduce.sh} regenerates every reported number from the released dictionary, fixed labels, and THINGS images.
 
 \begin{table}[h!]
   \centering
